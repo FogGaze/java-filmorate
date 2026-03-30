@@ -94,4 +94,9 @@ public class FilmController {
                 .orElse(0);
         return ++currentMaxId;
     }
+
+    public void clearStorage()  {
+        films.clear();
+        log.debug("Хранилище хэш мап очищено");
+    }
 }

@@ -100,4 +100,9 @@ public class UserController {
                 .orElse(0);
         return ++currentMaxId;
     }
+
+    public void clearStorage()  {
+        users.clear();
+        log.debug("Хранилище хэш мап очищено");
+    }
 }
