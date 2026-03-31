@@ -6,7 +6,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.time.Duration;
 import java.time.LocalDate;
 
 @Data
@@ -24,5 +23,5 @@ public class Film {
     private LocalDate releaseDate;
 
     @Positive(groups = {OnCreate.class, OnUpdate.class}, message = "Продолжительность должна быть положительной")
-    private Duration duration;
+    private int duration;
 }

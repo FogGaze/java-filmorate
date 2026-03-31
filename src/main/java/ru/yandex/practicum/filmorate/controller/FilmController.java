@@ -76,7 +76,7 @@ public class FilmController {
             }
         }
 
-        if (newFilm.getDuration() != null) {
+        if (newFilm.getDuration() > 0) {
             log.trace("Продолжительность фильма {} изменена", oldFilm.getName());
             oldFilm.setDuration(newFilm.getDuration());
         }
