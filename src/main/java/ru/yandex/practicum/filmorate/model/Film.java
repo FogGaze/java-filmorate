@@ -22,6 +22,6 @@ public class Film {
 
     private LocalDate releaseDate;
 
-    @Positive(groups = {OnCreate.class, OnUpdate.class}, message = "Продолжительность должна быть положительной")
+    @Positive(groups = OnCreate.class, message = "Продолжительность должна быть положительной")
     private int duration;
 }

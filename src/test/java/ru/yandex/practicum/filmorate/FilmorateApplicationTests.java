@@ -1,7 +1,5 @@
 package ru.yandex.practicum.filmorate;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,9 +9,12 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class FilmorateApplicationTests {
@@ -40,17 +41,37 @@ class FilmorateApplicationTests {
         return requestEntity;
     }
 
-    private long findID()
-    Gson gson = new Gson();
-    JsonObject json = gson.fromJson(responsePOST.getBody(), JsonObject.class);
-    long id = json.get("id").getAsLong();
+    private Film createFilm(String json) {
+        ResponseEntity<Film> response = restTemplate.postForEntity("/films", requestEntity(json), Film.class);
+        assertEquals(200, response.getStatusCodeValue());
+        return response.getBody();
+    }
 
+    private Film updateFilm(String json) {
+        ResponseEntity<Film> putResponse = restTemplate.exchange("/films", HttpMethod.PUT, requestEntity(json), Film.class);
+        assertEquals(200, putResponse.getStatusCodeValue());
+        return putResponse.getBody();
+    }
+
+    private User createUser(String json) {
+        ResponseEntity<User> response = restTemplate.postForEntity("/user", requestEntity(json), User.class);
+        assertEquals(200, response.getStatusCodeValue());
+        return response.getBody();
+    }
+
+    private User updateUser(String json) {
+        ResponseEntity<User> putResponse = restTemplate.exchange("/user", HttpMethod.PUT, requestEntity(json), User.class);
+        assertEquals(200, putResponse.getStatusCodeValue());
+        return putResponse.getBody();
+    }
+
+    //films
 	@Test
     @DisplayName("GET возвращает пустую коллекцию фильмов")
 	void getAllFilmsEmpty() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/films", String.class);
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals("[]", response.getBody());
+        ResponseEntity<Film[]> getResponse = restTemplate.getForEntity("/films", Film[].class);
+        Film[] films = getResponse.getBody();
+        assertEquals(0, getResponse.getBody().length);
 	}
 
     @Test
@@ -74,15 +95,17 @@ class FilmorateApplicationTests {
             }
             """;
 
-        ResponseEntity<String> responsePOST = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
-        assertEquals(200, responsePOST.getStatusCodeValue());
-        ResponseEntity<String> responsePOSTOne = restTemplate.postForEntity("/films", requestEntity(jsonInputOne), String.class);
-        assertEquals(200, responsePOSTOne.getStatusCodeValue());
+        Film filmOne = createFilm(jsonInput);
+        assertEquals("Фильм 1", filmOne.getName());
 
-        ResponseEntity<String> responseGET = restTemplate.getForEntity("/films", String.class);
-        assertEquals(200, responseGET.getStatusCodeValue());
-        assertTrue(responseGET.getBody().contains("\"name\":\"Фильм 1\""));
-        assertTrue(responseGET.getBody().contains("\"name\":\"Фильм 2\""));
+        Film filmTwo = createFilm(jsonInputOne);
+        assertEquals("Фильм 2", filmTwo.getName());
+
+        ResponseEntity<Film[]> getResponse = restTemplate.getForEntity("/films", Film[].class);
+        Film[] films = getResponse.getBody();
+        assertEquals(200, getResponse.getStatusCodeValue());
+        assertNotNull(films);
+        assertEquals(2, films.length);
     }
 
     @Test
@@ -95,11 +118,9 @@ class FilmorateApplicationTests {
             }
             """;
 
-        ResponseEntity<String> responsePOST = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
-        assertEquals(200, responsePOST.getStatusCodeValue());
-        assertTrue(responsePOST.getBody().contains("\"name\":\"Фильм 1\""));
+        Film filmOne = createFilm(jsonInput);
+        assertEquals("Фильм 1", filmOne.getName());
     }
-
 
     @Test
     @DisplayName("POST Фильм без имени не добавляется")
@@ -113,13 +134,13 @@ class FilmorateApplicationTests {
             }
             """;
 
-        ResponseEntity<String> responsePOST = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
-        assertEquals(400, responsePOST.getStatusCodeValue());
-        assertTrue(responsePOST.getBody().contains("Название не может быть пустым"));
+        ResponseEntity<String> postResponse = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
+        assertEquals(400, postResponse.getStatusCodeValue());
+        assertTrue(postResponse.getBody().contains("Название не может быть пустым"));
 
-        ResponseEntity<String> responseGET = restTemplate.getForEntity("/films", String.class);
-        assertEquals(200, responseGET.getStatusCodeValue());
-        assertEquals("[]", responseGET.getBody());
+        ResponseEntity<String> getResponse = restTemplate.getForEntity("/films", String.class);
+        assertEquals(200, getResponse.getStatusCodeValue());
+        assertEquals("[]", getResponse.getBody());
     }
 
     @Test
@@ -133,13 +154,13 @@ class FilmorateApplicationTests {
             }
             """;
 
-        ResponseEntity<String> responsePOST = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
-        assertEquals(400, responsePOST.getStatusCodeValue());
-        assertTrue(responsePOST.getBody().contains("Продолжительность должна быть положительной"));
+        ResponseEntity<String> postResponse = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
+        assertEquals(400, postResponse.getStatusCodeValue());
+        assertTrue(postResponse.getBody().contains("Продолжительность должна быть положительной"));
 
-        ResponseEntity<String> responseGET = restTemplate.getForEntity("/films", String.class);
-        assertEquals(200, responseGET.getStatusCodeValue());
-        assertEquals("[]", responseGET.getBody());
+        ResponseEntity<String> getResponse = restTemplate.getForEntity("/films", String.class);
+        assertEquals(200, getResponse.getStatusCodeValue());
+        assertEquals("[]", getResponse.getBody());
     }
 
     @Test
@@ -154,13 +175,13 @@ class FilmorateApplicationTests {
             }
             """;
 
-        ResponseEntity<String> responsePOST = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
-        assertEquals(400, responsePOST.getStatusCodeValue());
-        assertTrue(responsePOST.getBody().contains("Продолжительность должна быть положительной"));
+        ResponseEntity<String> postResponse = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
+        assertEquals(400, postResponse.getStatusCodeValue());
+        assertTrue(postResponse.getBody().contains("Продолжительность должна быть положительной"));
 
-        ResponseEntity<String> responseGET = restTemplate.getForEntity("/films", String.class);
-        assertEquals(200, responseGET.getStatusCodeValue());
-        assertEquals("[]", responseGET.getBody());
+        ResponseEntity<String> getResponse = restTemplate.getForEntity("/films", String.class);
+        assertEquals(200, getResponse.getStatusCodeValue());
+        assertEquals("[]", getResponse.getBody());
     }
 
     @Test
@@ -176,13 +197,13 @@ class FilmorateApplicationTests {
             }
             """.formatted(description);
 
-        ResponseEntity<String> responsePOST = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
-        assertEquals(400, responsePOST.getStatusCodeValue());
-        assertTrue(responsePOST.getBody().contains("Максимальная длина описания — 200 символов"));
+        ResponseEntity<String> postResponse = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
+        assertEquals(400, postResponse.getStatusCodeValue());
+        assertTrue(postResponse.getBody().contains("Максимальная длина описания — 200 символов"));
 
-        ResponseEntity<String> responseGET = restTemplate.getForEntity("/films", String.class);
-        assertEquals(200, responseGET.getStatusCodeValue());
-        assertEquals("[]", responseGET.getBody());
+        ResponseEntity<String> getResponse = restTemplate.getForEntity("/films", String.class);
+        assertEquals(200, getResponse.getStatusCodeValue());
+        assertEquals("[]", getResponse.getBody());
     }
 
     @Test
@@ -197,32 +218,26 @@ class FilmorateApplicationTests {
             }
             """;
 
-        ResponseEntity<String> responsePOST = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
-        assertEquals(400, responsePOST.getStatusCodeValue());
-        assertTrue(responsePOST.getBody().contains("Дата релиза — не раньше 28 декабря 1895 года"));
+        ResponseEntity<String> postResponse = restTemplate.postForEntity("/films", requestEntity(jsonInput), String.class);
+        assertEquals(400, postResponse.getStatusCodeValue());
+        assertTrue(postResponse.getBody().contains("Дата релиза — не раньше 28 декабря 1895 года"));
 
-        ResponseEntity<String> responseGET = restTemplate.getForEntity("/films", String.class);
-        assertEquals(200, responseGET.getStatusCodeValue());
-        assertEquals("[]", responseGET.getBody());
+        ResponseEntity<String> getResponse = restTemplate.getForEntity("/films", String.class);
+        assertEquals(200, getResponse.getStatusCodeValue());
+        assertEquals("[]", getResponse.getBody());
     }
 
     @Test
-    @DisplayName("PUT проходит успешно")
+    @DisplayName("PUT обновляет значения")
     void putDescriptionAndRelease() {
-        String jsonInputPost = """
+        String jsonInput = """
             {
                 "name": "Фильм 1",
                 "duration": 100
             }
             """;
 
-        ResponseEntity<String> responsePOST = restTemplate.postForEntity("/films", requestEntity(jsonInputPost), String.class);
-        assertEquals(200, responsePOST.getStatusCodeValue());
-        assertTrue(responsePOST.getBody().contains("\"name\":\"Фильм 1\""));
-
-        Gson gson = new Gson();
-        JsonObject json = gson.fromJson(responsePOST.getBody(), JsonObject.class);
-        long id = json.get("id").getAsLong();
+        Film film = createFilm(jsonInput);
 
         String jsonInputPut = """
             {
@@ -230,15 +245,214 @@ class FilmorateApplicationTests {
                 "description": "Очень хороший фильм",
                 "releaseDate": "2010-01-01"
             }
-            """.formatted(id).toString());
+            """.formatted(film.getId());
 
-        ResponseEntity<String> responsePUT = restTemplate.exchange("/films", HttpMethod.PUT, requestEntity(jsonInputPut), String.class);
-        assertEquals(200, responsePUT.getStatusCodeValue());
-        assertTrue(responsePUT.getBody().contains("\"name\":\"Фильм 1\""));
-        assertTrue(responsePUT.getBody().contains("\"duration\":\"100\""));
-        assertTrue(responsePUT.getBody().contains("\"releaseDate\":\"2010-01-01\""));
-        assertTrue(responsePUT.getBody().contains("\"description\":\"Очень хороший фильм\""));
-
+        Film filmUpdate = updateFilm(jsonInputPut);
+        assertEquals("Фильм 1", filmUpdate.getName());
+        assertEquals(100, filmUpdate.getDuration());
+        assertEquals("Очень хороший фильм", filmUpdate.getDescription());
+        assertEquals(LocalDate.of(2010, 01, 01), filmUpdate.getReleaseDate());
     }
+
+    @Test
+    @DisplayName("PUT обновляет только одно значение")
+    void putDescription() {
+        String jsonInput = """
+            {
+                "name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
+            }
+            """;
+
+        Film film = createFilm(jsonInput);
+
+        String jsonInputPut = """
+            {
+                "id": %s,
+                "description": "Отличное кино"
+            }
+            """.formatted(film.getId());
+
+        Film filmUpdate = updateFilm(jsonInputPut);
+        assertEquals("Фильм 1", filmUpdate.getName());
+        assertEquals(100, filmUpdate.getDuration());
+        assertEquals("Отличное кино", filmUpdate.getDescription());
+        assertEquals(LocalDate.of(2010, 01, 01), filmUpdate.getReleaseDate());
+    }
+
+    @Test
+    @DisplayName("PUT обновляет все значения")
+    void putUpdateAll() {
+        String jsonInput = """
+            {
+                "name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
+            }
+            """;
+
+        Film film = createFilm(jsonInput);
+
+        String jsonInputPut = """
+            {
+                "id": %s,
+                "name": "Фильм Один",
+                "description": "Отличное кино",
+                "releaseDate": "2020-02-02",
+                "duration": 200
+            }
+            """.formatted(film.getId());
+
+        Film filmUpdate = updateFilm(jsonInputPut);
+        assertEquals("Фильм Один", filmUpdate.getName());
+        assertEquals(200, filmUpdate.getDuration());
+        assertEquals("Отличное кино", filmUpdate.getDescription());
+        assertEquals(LocalDate.of(2020, 02, 02), filmUpdate.getReleaseDate());
+    }
+
+    @Test
+    @DisplayName("PUT не обновляет несуществующий фильм")
+    void putNoRealFilm() {
+        String jsonInputPut = """
+            {
+                "id": 1,
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01"
+            }
+            """;
+
+        ResponseEntity<String> putResponse = restTemplate.exchange("/films", HttpMethod.PUT, requestEntity(jsonInputPut), String.class);
+        assertEquals(404, putResponse.getStatusCodeValue());
+        assertTrue(putResponse.getBody().contains("Фильм с id = 1 не найден"));
+    }
+
+    @Test
+    @DisplayName("PUT не обновляет без ID")
+    void putNoIdFilm() {
+        String jsonInputPut = """
+            {
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01"
+            }
+            """;
+
+        ResponseEntity<String> putResponse = restTemplate.exchange("/films", HttpMethod.PUT, requestEntity(jsonInputPut), String.class);
+        assertEquals(400, putResponse.getStatusCodeValue());
+        assertTrue(putResponse.getBody().contains("ID обязателен при обновлении"));
+    }
+
+    @Test
+    @DisplayName("PUT не обновляет значения с неверной датой")
+    void putWrongRelease() {
+        String jsonInput = """
+            {
+                "name": "Фильм 1",
+                "duration": 100
+            }
+            """;
+
+        Film film = createFilm(jsonInput);
+
+        String jsonInputPut = """
+            {
+                "id": %s,
+                "description": "Очень хороший фильм",
+                "releaseDate": "1000-01-01"
+            }
+            """.formatted(film.getId());
+
+        ResponseEntity<String> putResponse = restTemplate.exchange("/films", HttpMethod.PUT, requestEntity(jsonInputPut), String.class);
+        assertEquals(400, putResponse.getStatusCodeValue());
+        assertTrue(putResponse.getBody().contains("Дата релиза — не раньше 28 декабря 1895 года"));
+    }
+
+    @Test
+    @DisplayName("PUT не обновляет значения с некорректным описанием")
+    void putWrongDescription() {
+        String jsonInput = """
+            {
+                "name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
+            }
+            """;
+
+        Film film = createFilm(jsonInput);
+        assertEquals("Очень хороший фильм", film.getDescription());
+
+        String description = "Очень хороший фильм".repeat(200);
+        String jsonInputPut = """
+            {
+                "id": %s,
+                "description": "%s"
+            }
+            """.formatted(film.getId(), description);
+
+        ResponseEntity<String> putResponse = restTemplate.exchange("/films", HttpMethod.PUT, requestEntity(jsonInputPut), String.class);
+        assertEquals(400, putResponse.getStatusCodeValue());
+        assertTrue(putResponse.getBody().contains("Максимальная длина описания — 200 символов"));
+    }
+
+    @Test
+    @DisplayName("PUT не обновит не положительную продолжительность")
+    void putWrongDuration() {
+        String jsonInput = """
+            {
+                "name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
+            }
+            """;
+
+        Film film = createFilm(jsonInput);
+
+        String jsonInputPut = """
+            {
+                "id": %s,
+                "duration": 0
+            }
+            """.formatted(film.getId());
+
+        Film filmUpdate = updateFilm(jsonInputPut);
+        assertEquals("Фильм 1", filmUpdate.getName());
+        assertEquals(100, filmUpdate.getDuration());
+        assertEquals("Очень хороший фильм", filmUpdate.getDescription());
+        assertEquals(LocalDate.of(2010, 01, 01), filmUpdate.getReleaseDate());
+    }
+
+    @Test
+    @DisplayName("PUT не обновит пустое имя")
+    void putWrongName() {
+        String jsonInput = """
+            {
+                "name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
+            }
+            """;
+
+        Film film = createFilm(jsonInput);
+
+        String jsonInputPut = """
+            {
+                "id": %s,
+                "name": ""
+            }
+            """.formatted(film.getId());
+
+        Film filmUpdate = updateFilm(jsonInputPut);
+        assertEquals("Фильм 1", filmUpdate.getName());
+        assertEquals(100, filmUpdate.getDuration());
+        assertEquals("Очень хороший фильм", filmUpdate.getDescription());
+        assertEquals(LocalDate.of(2010, 01, 01), filmUpdate.getReleaseDate());
+    }
+
+    //user
 
 }
