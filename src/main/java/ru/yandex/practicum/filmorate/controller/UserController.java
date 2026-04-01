@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
     private final Map<Long, User> users = new HashMap<>();
@@ -101,7 +101,7 @@ public class UserController {
         return ++currentMaxId;
     }
 
-    public void clearStorage()  {
+    public void clearStorage() {
         users.clear();
         log.debug("Хранилище хэш мап очищено");
     }

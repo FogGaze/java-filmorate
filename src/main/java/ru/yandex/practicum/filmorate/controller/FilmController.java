@@ -32,7 +32,7 @@ public class FilmController {
     public Film addFilm(@Validated(OnCreate.class) @RequestBody Film film) {
         log.trace("Получен запрос на добавление нового фильма");
 
-        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(LocalDate.of(1895,12,28))) {
+        if (film.getReleaseDate() != null && film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             log.warn("Передано некорректное значение релиза фильма {}", film.getReleaseDate());
             throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
         }
@@ -67,7 +67,7 @@ public class FilmController {
         }
 
         if (newFilm.getReleaseDate() != null) {
-            if (newFilm.getReleaseDate().isBefore(LocalDate.of(1895,12,28))) {
+            if (newFilm.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
                 log.warn("Передано некорректное значение релиза фильма {}", newFilm.getReleaseDate());
                 throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года");
             } else {
@@ -95,7 +95,7 @@ public class FilmController {
         return ++currentMaxId;
     }
 
-    public void clearStorage()  {
+    public void clearStorage() {
         films.clear();
         log.debug("Хранилище хэш мап очищено");
     }
