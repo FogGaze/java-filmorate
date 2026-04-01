@@ -78,19 +78,11 @@ class FilmorateApplicationTests {
     @DisplayName("GET возвращает коллекцию всех фильмов")
     void getAllFilms() {
         String jsonInput = """
-                {"name": "Фильм 1",
-                "description": "Очень хороший фильм",
-                "releaseDate": "2010-01-01",
-                "duration": 100
-                }
+                { "name": "Фильм 1", "description": "Очень хороший фильм", "releaseDate": "2010-01-01", "duration": 100 }
                 """;
 
         String jsonInputOne = """
-                {"name": "Фильм 2",
-                "description": "Очень хороший фильм",
-                "releaseDate": "2010-01-01",
-                "duration": 100
-                }
+                {"name": "Фильм 2", "description": "Очень хороший фильм", "releaseDate": "2010-01-01", "duration": 100}
                 """;
 
         Film filmOne = createFilm(jsonInput);
