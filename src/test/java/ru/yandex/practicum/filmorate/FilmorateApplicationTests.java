@@ -78,20 +78,18 @@ class FilmorateApplicationTests {
     @DisplayName("GET возвращает коллекцию всех фильмов")
     void getAllFilms() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01",
-                    "duration": 100
+                {"name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
                 }
                 """;
 
         String jsonInputOne = """
-                {
-                    "name": "Фильм 2",
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01",
-                    "duration": 100
+                {"name": "Фильм 2",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
                 }
                 """;
 
@@ -112,9 +110,8 @@ class FilmorateApplicationTests {
     @DisplayName("POST только имя и продолжительность")
     void postNameAndDurationFilm() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "duration": 100
+                {"name": "Фильм 1",
+                "duration": 100
                 }
                 """;
 
@@ -126,11 +123,10 @@ class FilmorateApplicationTests {
     @DisplayName("POST Фильм без имени не добавляется")
     void postFilmNoName() {
         String jsonInput = """
-                {
-                    "name": "",
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01",
-                    "duration": 100
+                {"name": "",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
                 }
                 """;
 
@@ -147,10 +143,9 @@ class FilmorateApplicationTests {
     @DisplayName("POST Фильм без продолжительности не добавляется")
     void postFilmNoDuration() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01"
+                {"name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01"
                 }
                 """;
 
@@ -167,11 +162,10 @@ class FilmorateApplicationTests {
     @DisplayName("POST Фильм с отрицательной продолжительностью не добавляется")
     void postFilmNegativeDuration() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01",
-                    "duration": -1
+                {"name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": -1
                 }
                 """;
 
@@ -189,11 +183,10 @@ class FilmorateApplicationTests {
     void postFilmBigDescription() {
         String description = "Очень хороший фильм".repeat(200);
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "description": "%s",
-                    "releaseDate": "2010-01-01",
-                    "duration": 100
+                {"name": "Фильм 1",
+                "description": "%s",
+                "releaseDate": "2010-01-01",
+                "duration": 100
                 }
                 """.formatted(description);
 
@@ -210,11 +203,10 @@ class FilmorateApplicationTests {
     @DisplayName("POST Фильм с релизом ранее 28 декабря 1895 года не добавляется")
     void postFilmEarlyReleaseDate() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "1895-01-01",
-                    "duration": 100
+                {"name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "1895-01-01",
+                "duration": 100
                 }
                 """;
 
@@ -231,19 +223,17 @@ class FilmorateApplicationTests {
     @DisplayName("PUT обновляет значения")
     void putDescriptionAndRelease() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "duration": 100
+                {"name": "Фильм 1",
+                "duration": 100
                 }
                 """;
 
         Film film = createFilm(jsonInput);
 
         String jsonInputPut = """
-                {
-                    "id": %s,
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01"
+                {"id": %s,
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01"
                 }
                 """.formatted(film.getId());
 
@@ -258,20 +248,18 @@ class FilmorateApplicationTests {
     @DisplayName("PUT обновляет только одно значение")
     void putDescription() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01",
-                    "duration": 100
+                {"name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
                 }
                 """;
 
         Film film = createFilm(jsonInput);
 
         String jsonInputPut = """
-                {
-                    "id": %s,
-                    "description": "Отличное кино"
+                {"id": %s,
+                "description": "Отличное кино"
                 }
                 """.formatted(film.getId());
 
@@ -286,23 +274,21 @@ class FilmorateApplicationTests {
     @DisplayName("PUT обновляет все значения")
     void putUpdateAll() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01",
-                    "duration": 100
+                {"name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
                 }
                 """;
 
         Film film = createFilm(jsonInput);
 
         String jsonInputPut = """
-                {
-                    "id": %s,
-                    "name": "Фильм Один",
-                    "description": "Отличное кино",
-                    "releaseDate": "2020-02-02",
-                    "duration": 200
+                {"id": %s,
+                "name": "Фильм Один",
+                "description": "Отличное кино",
+                "releaseDate": "2020-02-02",
+                "duration": 200
                 }
                 """.formatted(film.getId());
 
@@ -317,10 +303,9 @@ class FilmorateApplicationTests {
     @DisplayName("PUT не обновляет несуществующий фильм")
     void putNoRealFilm() {
         String jsonInputPut = """
-                {
-                    "id": 1,
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01"
+                {"id": 1,
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01"
                 }
                 """;
 
@@ -333,9 +318,8 @@ class FilmorateApplicationTests {
     @DisplayName("PUT не обновляет без ID")
     void putNoIdFilm() {
         String jsonInputPut = """
-                {
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01"
+                {"description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01"
                 }
                 """;
 
@@ -348,19 +332,17 @@ class FilmorateApplicationTests {
     @DisplayName("PUT не обновляет значения с неверной датой")
     void putWrongRelease() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "duration": 100
+                {"name": "Фильм 1",
+                "duration": 100
                 }
                 """;
 
         Film film = createFilm(jsonInput);
 
         String jsonInputPut = """
-                {
-                    "id": %s,
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "1000-01-01"
+                {"id": %s,
+                "description": "Очень хороший фильм",
+                "releaseDate": "1000-01-01"
                 }
                 """.formatted(film.getId());
 
@@ -373,11 +355,10 @@ class FilmorateApplicationTests {
     @DisplayName("PUT не обновляет значения с некорректным описанием")
     void putWrongDescription() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01",
-                    "duration": 100
+                {"name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
                 }
                 """;
 
@@ -386,9 +367,8 @@ class FilmorateApplicationTests {
 
         String description = "Очень хороший фильм".repeat(200);
         String jsonInputPut = """
-                {
-                    "id": %s,
-                    "description": "%s"
+                {"id": %s,
+                "description": "%s"
                 }
                 """.formatted(film.getId(), description);
 
@@ -401,20 +381,18 @@ class FilmorateApplicationTests {
     @DisplayName("PUT не обновит не положительную продолжительность")
     void putWrongDuration() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01",
-                    "duration": 100
+                {"name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
                 }
                 """;
 
         Film film = createFilm(jsonInput);
 
         String jsonInputPut = """
-                {
-                    "id": %s,
-                    "duration": 0
+                {"id": %s,
+                "duration": 0
                 }
                 """.formatted(film.getId());
 
@@ -429,20 +407,18 @@ class FilmorateApplicationTests {
     @DisplayName("PUT не обновит пустое имя")
     void putWrongName() {
         String jsonInput = """
-                {
-                    "name": "Фильм 1",
-                    "description": "Очень хороший фильм",
-                    "releaseDate": "2010-01-01",
-                    "duration": 100
+                {"name": "Фильм 1",
+                "description": "Очень хороший фильм",
+                "releaseDate": "2010-01-01",
+                "duration": 100
                 }
                 """;
 
         Film film = createFilm(jsonInput);
 
         String jsonInputPut = """
-                {
-                    "id": %s,
-                    "name": ""
+                {"id": %s,
+                "name": ""
                 }
                 """.formatted(film.getId());
 
@@ -458,11 +434,10 @@ class FilmorateApplicationTests {
     @DisplayName("POST создание пользователя")
     void postAddUser() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr",
-                    "name": "Пётр",
-                    "birthday": "1995-01-01"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr",
+                "name": "Пётр",
+                "birthday": "1995-01-01"
                 }
                 """;
 
@@ -477,9 +452,8 @@ class FilmorateApplicationTests {
     @DisplayName("POST создание пользователя, email и логин")
     void postAddUserEmailAndLogin() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr"
                 }
                 """;
 
@@ -494,18 +468,16 @@ class FilmorateApplicationTests {
     @DisplayName("POST не создаёт пользователя при дублирование email")
     void postAddDoubleUser() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr"
                 }
                 """;
 
         createUser(jsonInput);
 
         String jsonInputTwo = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Ivan"
+                {"email": "practicum@yandex.ru",
+                "login": "Ivan"
                 }
                 """;
 
@@ -518,11 +490,10 @@ class FilmorateApplicationTests {
     @DisplayName("POST возвращает ошибку при некорректном логине")
     void postAddUserWrongLogin() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "P e t r ",
-                    "name": "Пётр",
-                    "birthday": "1995-01-01"
+                {"email": "practicum@yandex.ru",
+                "login": "P e t r ",
+                "name": "Пётр",
+                "birthday": "1995-01-01"
                 }
                 """;
 
@@ -535,11 +506,10 @@ class FilmorateApplicationTests {
     @DisplayName("POST возвращает ошибку при некорректном email")
     void postAddUserWrongEmail() {
         String jsonInput = """
-                {
-                    "email": "practicumyandexru",
-                    "login": "Petr",
-                    "name": "Пётр",
-                    "birthday": "1995-01-01"
+                {"email": "practicumyandexru",
+                "login": "Petr",
+                "name": "Пётр",
+                "birthday": "1995-01-01"
                 }
                 """;
 
@@ -552,11 +522,10 @@ class FilmorateApplicationTests {
     @DisplayName("POST возвращает ошибку при дате рождения в будущем")
     void postAddUserWrongBirthday() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr",
-                    "name": "Пётр",
-                    "birthday": "2995-01-01"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr",
+                "name": "Пётр",
+                "birthday": "2995-01-01"
                 }
                 """;
 
@@ -578,17 +547,15 @@ class FilmorateApplicationTests {
     @DisplayName("GET получение всех пользователей")
     void getAllUsers() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr"
                 }
                 """;
         createUser(jsonInput);
 
         String jsonInputTwo = """
-                {
-                    "email": "practicum2@yandex.ru",
-                    "login": "Ivan"
+                {"email": "practicum2@yandex.ru",
+                "login": "Ivan"
                 }
                 """;
         createUser(jsonInputTwo);
@@ -604,9 +571,8 @@ class FilmorateApplicationTests {
     @DisplayName("PUT обновление данных пользователя, имя и дата рождения")
     void putUpdateUserNameAndBirthDay() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr"
                 }
                 """;
 
@@ -617,10 +583,9 @@ class FilmorateApplicationTests {
         assertNull(user.getBirthday());
 
         String jsonInputUpdate = """
-                {
-                    "id": %s,
-                    "name": "Пётр",
-                    "birthday": "1995-01-01"
+                {"id": %s,
+                "name": "Пётр",
+                "birthday": "1995-01-01"
                 }
                 """.formatted(user.getId());
 
@@ -641,11 +606,10 @@ class FilmorateApplicationTests {
     @DisplayName("PUT обновление всех данных пользователя")
     void putUpdateAllUser() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr",
-                    "name": "Пётр",
-                    "birthday": "1995-01-01"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr",
+                "name": "Пётр",
+                "birthday": "1995-01-01"
                 }
                 """;
 
@@ -656,12 +620,11 @@ class FilmorateApplicationTests {
         assertEquals(LocalDate.of(1995, 01, 01), user.getBirthday());
 
         String jsonInputUpdate = """
-                {
-                    "id": %s,
-                    "email": "practicum1990@yandex.ru",
-                    "login": "Ivan",
-                    "name": "Иван",
-                    "birthday": "1990-01-01"
+                {"id": %s,
+                "email": "practicum1990@yandex.ru",
+                "login": "Ivan",
+                "name": "Иван",
+                "birthday": "1990-01-01"
                 }
                 """.formatted(user.getId());
 
@@ -682,18 +645,16 @@ class FilmorateApplicationTests {
     @DisplayName("PUT возвращает исключения. id некорректный")
     void putUpdateUserWrongId() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr"
                 }
                 """;
         createUser(jsonInput);
 
         String jsonInputUpdate = """
-                {
-                    "id": 56,
-                    "name": "Пётр",
-                    "birthday": "1995-01-01"
+                {"id": 56,
+                "name": "Пётр",
+                "birthday": "1995-01-01"
                 }
                 """;
 
@@ -702,9 +663,8 @@ class FilmorateApplicationTests {
         assertTrue(putResponse.getBody().contains("Пользователь с id = 56 не найден"));
 
         String jsonInputUpdateTwo = """
-                {
-                    "name": "Пётр",
-                    "birthday": "1995-01-01"
+                {"name": "Пётр",
+                "birthday": "1995-01-01"
                 }
                 """;
 
@@ -723,31 +683,28 @@ class FilmorateApplicationTests {
     @DisplayName("PUT возвращает ошибку при дублирование email")
     void putUpdateUserEmailDouble() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr",
-                    "name": "Пётр",
-                    "birthday": "1995-01-01"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr",
+                "name": "Пётр",
+                "birthday": "1995-01-01"
                 }
                 """;
         User user = createUser(jsonInput);
         assertEquals("practicum@yandex.ru", user.getEmail());
 
         String jsonInputTwo = """
-                {
-                    "email": "practicum1990@yandex.ru",
-                    "login": "Ivan",
-                    "name": "Иван",
-                    "birthday": "1995-01-01"
+                {"email": "practicum1990@yandex.ru",
+                "login": "Ivan",
+                "name": "Иван",
+                "birthday": "1995-01-01"
                 }
                 """;
         User userTwo = createUser(jsonInputTwo);
         assertEquals("practicum1990@yandex.ru", userTwo.getEmail());
 
         String jsonInputUpdate = """
-                {
-                    "id": %s,
-                    "email": "practicum@yandex.ru"
+                {"id": %s,
+                "email": "practicum@yandex.ru"
                 }
                 """.formatted(userTwo.getId());
 
@@ -760,20 +717,18 @@ class FilmorateApplicationTests {
     @DisplayName("PUT возвращает ошибку при некорректном email")
     void putAddUserWrongEmail() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr",
-                    "name": "Пётр",
-                    "birthday": "1995-01-01"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr",
+                "name": "Пётр",
+                "birthday": "1995-01-01"
                 }
                 """;
         User user = createUser(jsonInput);
         assertEquals("practicum@yandex.ru", user.getEmail());
 
         String jsonInputUpdate = """
-                {
-                    "id": %s,
-                    "email": "practicumyandexru"
+                {"id": %s,
+                "email": "practicumyandexru"
                 }
                 """.formatted(user.getId());
 
@@ -786,20 +741,18 @@ class FilmorateApplicationTests {
     @DisplayName("PUT возвращает ошибку при дате рождения в будущем")
     void putAddUserWrongBirthday() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr",
-                    "name": "Пётр",
-                    "birthday": "1995-01-01"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr",
+                "name": "Пётр",
+                "birthday": "1995-01-01"
                 }
                 """;
         User user = createUser(jsonInput);
         assertEquals(LocalDate.of(1995, 01, 01), user.getBirthday());
 
         String jsonInputUpdate = """
-                {
-                    "id": %s,
-                    "birthday": "2995-01-01"
+                {"id": %s,
+                "birthday": "2995-01-01"
                 }
                 """.formatted(user.getId());
 
@@ -812,20 +765,18 @@ class FilmorateApplicationTests {
     @DisplayName("PUT возвращает ошибку при некорректном логине")
     void putAddUserWrongLogin() {
         String jsonInput = """
-                {
-                    "email": "practicum@yandex.ru",
-                    "login": "Petr",
-                    "name": "Пётр",
-                    "birthday": "1995-01-01"
+                {"email": "practicum@yandex.ru",
+                "login": "Petr",
+                "name": "Пётр",
+                "birthday": "1995-01-01"
                 }
                 """;
         User user = createUser(jsonInput);
         assertEquals("Petr", user.getLogin());
 
         String jsonInputUpdate = """
-                {
-                    "id": %s,
-                    "login": "P e t r"
+                {"id": %s,
+                "login": "P e t r"
                 }
                 """.formatted(user.getId());
 
