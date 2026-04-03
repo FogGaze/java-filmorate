@@ -52,8 +52,8 @@ public class ErrorHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", ex.getMessage()));
     }
 
-    @ExceptionHandler(Throwable.class)
-    public ResponseEntity<Map<String, String>> handleOther(Throwable ex) {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleOther(Exception ex) {
         log.error("Непредвиденная ошибка", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Произошла внутренняя ошибка сервера"));
