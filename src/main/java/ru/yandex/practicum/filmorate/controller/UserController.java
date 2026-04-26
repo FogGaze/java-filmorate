@@ -1,108 +1,87 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.AlreadyExists;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.OnCreate;
 import ru.yandex.practicum.filmorate.model.OnUpdate;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public Collection<User> getUsers() {
         log.trace("Получен запрос коллекции всех пользователей");
-        log.trace("Передана коллекция всех пользователей");
-        return users.values();
+        return userService.getAllUsers();
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable long id) {
+        log.trace("Получен запрос пользователя по id={}", id);
+        return userService.getUserById(id);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable long id) {
+        log.trace("Получен запрос списка друзей пользователя id={}", id);
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        log.trace("Получен запрос списка общих друзей пользователя id={} и {}", id, otherId);
+        return userService.getCommonFriends(id, otherId);
     }
 
     @PostMapping
     public User addUser(@Validated(OnCreate.class) @RequestBody User user) {
         log.trace("Получен запрос на добавление нового пользователя");
-
-        if (users.values().stream()
-                .anyMatch(existingUser -> existingUser.getEmail().equals(user.getEmail()))) {
-            log.warn("Пользователь с таким email {} уже существует", user.getEmail());
-            throw new AlreadyExists("Пользователь с таким email уже существует");
-        }
-
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.trace("Имя пользователя не было передано. Установленно имя по умолчанию");
-            user.setName(user.getLogin());
-        }
-
-        user.setId(getNextId());
-        log.trace("Установлено ID {} для пользователя {}", user.getId(), user.getLogin());
-        users.put(user.getId(), user);
-        log.trace("Пользователь {} с ID {} добавлен в базу данных", user.getLogin(), user.getId());
-        return user;
+        return userService.addUser(user);
     }
 
     @PutMapping
     public User updateUser(@Validated(OnUpdate.class) @RequestBody User newUser) {
         log.trace("Получен запрос на обновление существующего пользователя");
-
-        if (!users.containsKey(newUser.getId())) {
-            log.warn("Передано некорректное значение ID пользователя {}", newUser.getId());
-            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
-        }
-
-        User oldUser = users.get(newUser.getId());
-
-        if (newUser.getName() != null && !newUser.getName().isBlank()) {
-            log.trace("Имя пользователя {} изменено на {}", oldUser.getName(), newUser.getName());
-            oldUser.setName(newUser.getName());
-        }
-
-        if (newUser.getEmail() != null && !newUser.getEmail().isBlank()) {
-            if (users.values().stream()
-                    .anyMatch(existingUser -> existingUser.getEmail().equals(newUser.getEmail())
-                            && !existingUser.getId().equals(oldUser.getId()))) {
-                log.warn("Пользователь с таким email {} уже существует", newUser.getEmail());
-                throw new AlreadyExists("Пользователь с таким email уже существует");
-            } else {
-                log.trace("email пользователя {} изменен на {}", oldUser.getEmail(), newUser.getEmail());
-                oldUser.setEmail(newUser.getEmail());
-            }
-        }
-
-        if (newUser.getLogin() != null && !newUser.getLogin().isBlank()) {
-            log.trace("Логин пользователя {} изменен на {}", oldUser.getLogin(), newUser.getLogin());
-            oldUser.setLogin(newUser.getLogin());
-        }
-
-        if (newUser.getBirthday() != null) {
-            log.trace("Дата рождения пользователя обновлена");
-            oldUser.setBirthday(newUser.getBirthday());
-        }
-
-        users.put(oldUser.getId(), oldUser);
-        log.trace("Пользователь {}, ID {} обновлён в базе данных", oldUser.getLogin(), oldUser.getId());
-        return oldUser;
+        return userService.updateUser(newUser);
     }
 
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.trace("Получен запрос на добавления в друзья пользователей с id={}, {}", id, friendId);
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable long id) {
+        log.trace("Получен запрос на удаление пользователя с id={}", id);
+        userService.deleteUser(id);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.trace("Получен запрос на удаление пользователя с id={} из друзей пользователя {}", friendId, id);
+        userService.removeFriend(id, friendId);
     }
 
     public void clearStorage() {
-        users.clear();
-        log.debug("Хранилище хэш мап очищено");
+        userService.clearStorage();
     }
 }

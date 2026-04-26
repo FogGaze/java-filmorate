@@ -65,6 +65,62 @@ class FilmorateApplicationTests {
         return putResponse.getBody();
     }
 
+    private void addFriend(long userId, long friendId) {
+        restTemplate.exchange("/users/{id}/friends/{friendId}", HttpMethod.PUT, null, Void.class,
+                userId, friendId);
+    }
+
+    private void removeFriend(long userId, long friendId) {
+        restTemplate.exchange("/users/{id}/friends/{friendId}", HttpMethod.DELETE, null, Void.class,
+                userId, friendId);
+    }
+
+    private ResponseEntity<String> addFriendWithResponse(long userId, long friendId) {
+        return restTemplate.exchange("/users/{id}/friends/{friendId}", HttpMethod.PUT, null, String.class,
+                userId, friendId);
+    }
+
+    private ResponseEntity<String> removeFriendWithResponse(long userId, long friendId) {
+        return restTemplate.exchange("/users/{id}/friends/{friendId}", HttpMethod.DELETE, null, String.class,
+                userId, friendId);
+    }
+
+    private User[] getFriends(long userId) {
+        ResponseEntity<User[]> response = restTemplate.getForEntity("/users/{id}/friends", User[].class, userId);
+        return response.getBody();
+    }
+
+    private User[] getCommonFriends(long userId, long otherId) {
+        ResponseEntity<User[]> response = restTemplate.getForEntity("/users/{id}/friends/common/{otherId}", User[].class,
+                userId, otherId);
+        return response.getBody();
+    }
+
+    private void addLike(long filmId, long userId) {
+        restTemplate.exchange("/films/{id}/like/{userId}", HttpMethod.PUT, null, Void.class, filmId, userId);
+    }
+
+    private void removeLike(long filmId, long userId) {
+        restTemplate.exchange("/films/{id}/like/{userId}", HttpMethod.DELETE, null, Void.class, filmId, userId);
+    }
+
+    private ResponseEntity<String> addLikeWithResponse(long filmId, long userId) {
+        return restTemplate.exchange("/films/{id}/like/{userId}", HttpMethod.PUT, null, String.class, filmId, userId);
+    }
+
+    private ResponseEntity<String> removeLikeWithResponse(long filmId, long userId) {
+        return restTemplate.exchange("/films/{id}/like/{userId}", HttpMethod.DELETE, null, String.class, filmId, userId);
+    }
+
+    private Film[] getPopularFilms(int count) {
+        ResponseEntity<Film[]> response = restTemplate.getForEntity("/films/popular?count={count}", Film[].class, count);
+        return response.getBody();
+    }
+
+    private Film getFilmById(long filmId) {
+        return restTemplate.getForEntity("/films/{id}", Film.class, filmId).getBody();
+    }
+
     //films
     @Test
     @DisplayName("GET возвращает пустую коллекцию фильмов")
@@ -559,6 +615,168 @@ class FilmorateApplicationTests {
         ResponseEntity<String> putResponse = restTemplate.exchange("/users", HttpMethod.PUT, requestEntity(jsonInputUpdate), String.class);
         assertEquals(400, putResponse.getStatusCodeValue());
         assertTrue(putResponse.getBody().contains("Логин не должен содержать пробелов"));
+    }
+
+    // Друзья
+    @Test
+    @DisplayName("Добавление друга")
+    void addFriend() {
+        User user1 = createUser("{ \"email\": \"user1@yandex.ru\", \"login\": \"user1\" }");
+        User user2 = createUser("{ \"email\": \"user2@yandex.ru\", \"login\": \"user2\" }");
+
+        addFriend(user1.getId(), user2.getId());
+
+        User[] friendsOfUser1 = getFriends(user1.getId());
+        assertEquals(1, friendsOfUser1.length);
+        assertEquals(user2.getId(), friendsOfUser1[0].getId());
+
+        User[] friendsOfUser2 = getFriends(user2.getId());
+        assertEquals(1, friendsOfUser2.length);
+        assertEquals(user1.getId(), friendsOfUser2[0].getId());
+    }
+
+    @Test
+    @DisplayName("Повторное добавление возвращает ошибку")
+    void addFriendDuplicate() {
+        User user1 = createUser("{ \"email\": \"a@yandex.ru\", \"login\": \"a\" }");
+        User user2 = createUser("{ \"email\": \"b@yandex.ru\", \"login\": \"b\" }");
+
+        addFriend(user1.getId(), user2.getId());
+        ResponseEntity<String> response = addFriendWithResponse(user1.getId(), user2.getId());
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("уже являются друзьями"));
+    }
+
+    @Test
+    @DisplayName("Попытка добавить самого себя")
+    void addFriendSelf() {
+        User user = createUser("{ \"email\": \"a@yandex.ru\", \"login\": \"a\" }");
+        ResponseEntity<String> response = addFriendWithResponse(user.getId(), user.getId());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("не может взаимодействовать сам с собой"));
+    }
+
+    @Test
+    @DisplayName("Удаление друга")
+    void removeFriend() {
+        User user1 = createUser("{ \"email\": \"user1@yandex.ru\", \"login\": \"user1\" }");
+        User user2 = createUser("{ \"email\": \"user2@yandex.ru\", \"login\": \"user2\" }");
+
+        addFriend(user1.getId(), user2.getId());
+        removeFriend(user1.getId(), user2.getId());
+
+        assertEquals(0, getFriends(user1.getId()).length);
+        assertEquals(0, getFriends(user2.getId()).length);
+    }
+
+    @Test
+    @DisplayName("Попытка удалить отсутствующего в списке друзей")
+    void removeFriendNotFriend() {
+        User user1 = createUser("{ \"email\": \"user1@yandex.ru\", \"login\": \"user1\" }");
+        User user2 = createUser("{ \"email\": \"user2@yandex.ru\", \"login\": \"user2\" }");
+
+        ResponseEntity<String> response = removeFriendWithResponse(user1.getId(), user2.getId());
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Список общих друзей")
+    void getCommonFriends() {
+        User user1 = createUser("{ \"email\": \"user1@yandex.ru\", \"login\": \"user1\" }");
+        User user2 = createUser("{ \"email\": \"user2@yandex.ru\", \"login\": \"user2\" }");
+        User common = createUser("{ \"email\": \"common@yandex.ru\", \"login\": \"common\" }");
+
+        addFriend(user1.getId(), common.getId());
+        addFriend(user2.getId(), common.getId());
+
+        User[] commonFriends = getCommonFriends(user1.getId(), user2.getId());
+        assertEquals(1, commonFriends.length);
+        assertEquals(common.getId(), commonFriends[0].getId());
+    }
+
+//Лайки и популярные фильмы
+    @Test
+    @DisplayName("Поставить лайк фильму")
+    void addLike() {
+        Film film = createFilm("{ \"name\": \"Film\", \"duration\": 100 }");
+        User user1 = createUser("{ \"email\": \"user1@yandex.ru\", \"login\": \"user1\" }");
+
+        addLike(film.getId(), user1.getId());
+
+        Film[] popular = getPopularFilms(1);
+        assertEquals(1, popular.length);
+        assertEquals(film.getId(), popular[0].getId());
+    }
+
+    @Test
+    @DisplayName("Нельзя поставить повторный лайк")
+    void addLikeDuplicate() {
+        Film film = createFilm("{ \"name\": \"Film\", \"duration\": 100 }");
+        User user1 = createUser("{ \"email\": \"user1@yandex.ru\", \"login\": \"user1\" }");
+
+        addLike(film.getId(), user1.getId());
+        ResponseEntity<String> response = addLikeWithResponse(film.getId(), user1.getId());
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("уже поставил лайк"));
+    }
+
+    @Test
+    @DisplayName("Удаление лайка")
+    void removeLike() {
+        Film film = createFilm("{ \"name\": \"Film\", \"duration\": 100 }");
+        User user1 = createUser("{ \"email\": \"user1@yandex.ru\", \"login\": \"user1\" }");
+
+        addLike(film.getId(), user1.getId());
+        removeLike(film.getId(), user1.getId());
+
+        Film updated = getFilmById(film.getId());
+        assertEquals(0, updated.getLikes().size());
+    }
+
+    @Test
+    @DisplayName("Популярные фильмы, сортировка по лайкам")
+    void getPopularFilms() {
+        Film film1 = createFilm("{ \"name\": \"Film1\", \"duration\": 100 }");
+        Film film2 = createFilm("{ \"name\": \"Film2\", \"duration\": 100 }");
+        Film film3 = createFilm("{ \"name\": \"Film3\", \"duration\": 100 }");
+
+        User user1 = createUser("{ \"email\": \"user1@yandex.ru\", \"login\": \"user1\" }");
+        User user2 = createUser("{ \"email\": \"user2@yandex.ru\", \"login\": \"user2\" }");
+        User user3 = createUser("{ \"email\": \"user3@yandex.ru\", \"login\": \"user3\" }");
+
+        addLike(film1.getId(), user1.getId());
+        addLike(film1.getId(), user2.getId());
+        addLike(film1.getId(), user3.getId());
+        addLike(film2.getId(), user1.getId());
+        addLike(film2.getId(), user2.getId());
+        addLike(film3.getId(), user1.getId());
+
+        Film[] popular = getPopularFilms(3);
+        assertEquals(3, popular.length);
+        assertEquals(film1.getId(), popular[0].getId());
+        assertEquals(film2.getId(), popular[1].getId());
+        assertEquals(film3.getId(), popular[2].getId());
+    }
+
+    @Test
+    @DisplayName("Популярные фильмы параметр count по умолчанию 10")
+    void getPopularDefaultCount() {
+        for (int i = 1; i <= 5; i++) {
+            createFilm(String.format("{ \"name\": \"film%d\", \"duration\": 100 }", i));
+        }
+        Film[] popular = getPopularFilms(10);
+        assertEquals(5, popular.length);
+    }
+
+    @Test
+    @DisplayName("Популярные фильмы count=0 заменяется на 10")
+    void getPopularZeroCount() {
+        createFilm("{ \"name\": \"film\", \"duration\": 100 }");
+        Film[] popular = getPopularFilms(0);
+        assertNotNull(popular);
+        assertEquals(1, popular.length);
     }
 
 }
