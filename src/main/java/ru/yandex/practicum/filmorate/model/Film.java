@@ -28,4 +28,8 @@ public class Film {
     private int duration;
 
     private Set<Long> likes = new HashSet<>();
+
+    private Set<Genre> genres = new HashSet<>();
+
+    private Rating rating;
 }
