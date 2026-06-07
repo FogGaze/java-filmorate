@@ -1,7 +1,11 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Data;
+
+@Data
 public class Rating {
 
-    Long id;
-    String name;
+    private Long id;
+    private String name;
+    private String description;
 }

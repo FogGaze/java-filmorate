@@ -1,12 +1,12 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,7 +17,7 @@ public class UserService {
 
     private final UserStorage userStorage;
 
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -26,20 +26,17 @@ public class UserService {
         checkSameUserId(userId, friendId);
 
         User user = getUserById(userId);
-        User friend = getUserById(friendId);
+        getUserById(friendId);
 
-        if (user.getFriends().contains(friendId) && friend.getFriends().contains(userId)) {
+        if (user.getFriends().contains(friendId)) {
             log.warn("Пользователь с ID {} не может добавить в друзья пользователя {}, так как они уже друзья", userId, friendId);
             throw new ValidationException("Пользователи уже являются друзьями");
         }
 
         user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
 
         updateUser(user);
         log.trace("Пользователь с ID {} добавлен в список друзей пользователя {}", friendId, userId);
-        updateUser(friend);
-        log.trace("Пользователь с ID {} добавлен в список друзей пользователя {}", userId, friendId);
     }
 
     public void removeFriend(long userId, long friendId) {
@@ -47,26 +44,19 @@ public class UserService {
         checkSameUserId(userId, friendId);
 
         User user = getUserById(userId);
-        User friend = getUserById(friendId);
+        getUserById(friendId);
 
         user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
 
         updateUser(user);
         log.trace("Пользователь с ID {} удален из списка друзей пользователя {}", friendId, userId);
-        updateUser(friend);
-        log.trace("Пользователь с ID {} удален из списка друзей пользователя {}", userId, friendId);
     }
 
     public List<User> getFriends(long userId) {
 
         User user = getUserById(userId);
 
-        List<User> userFriends = new ArrayList<>();
-        for (long id : user.getFriends()) {
-            User friend = getUserById(id);
-            userFriends.add(friend);
-        }
+        List<User> userFriends = userStorage.findUsers(user.getFriends());
         log.trace("Передан список друзей пользователя с ID {}", userId);
         return userFriends;
     }
@@ -80,11 +70,7 @@ public class UserService {
                 .filter(friendId -> other.getFriends().contains(friendId))
                 .collect(Collectors.toList());
 
-        List<User> userFriends = new ArrayList<>();
-        for (long id : commonFriends) {
-            User friend = getUserById(id);
-            userFriends.add(friend);
-        }
+        List<User> userFriends = userStorage.findUsers(commonFriends);
 
         log.trace("Передан список общих друзей пользователя с ID {} и пользователя {}", userId, otherId);
         return userFriends;

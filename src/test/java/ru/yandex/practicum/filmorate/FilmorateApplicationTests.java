@@ -631,8 +631,7 @@ class FilmorateApplicationTests {
         assertEquals(user2.getId(), friendsOfUser1[0].getId());
 
         User[] friendsOfUser2 = getFriends(user2.getId());
-        assertEquals(1, friendsOfUser2.length);
-        assertEquals(user1.getId(), friendsOfUser2[0].getId());
+        assertEquals(0, friendsOfUser2.length);
     }
 
     @Test
@@ -667,7 +666,6 @@ class FilmorateApplicationTests {
         removeFriend(user1.getId(), user2.getId());
 
         assertEquals(0, getFriends(user1.getId()).length);
-        assertEquals(0, getFriends(user2.getId()).length);
     }
 
     @Test
@@ -695,7 +693,7 @@ class FilmorateApplicationTests {
         assertEquals(common.getId(), commonFriends[0].getId());
     }
 
-//Лайки и популярные фильмы
+    //Лайки и популярные фильмы
     @Test
     @DisplayName("Поставить лайк фильму")
     void addLike() {

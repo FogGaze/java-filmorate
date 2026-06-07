@@ -8,7 +8,9 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -93,6 +95,14 @@ public class InMemoryUserStorage implements UserStorage {
         checkIdUser(id);
         log.trace("Передан пользователь с ID {}", id);
         return users.get(id);
+    }
+
+    @Override
+    public List<User> findUsers(Collection<Long> ids) {
+        return ids.stream()
+                .filter(users::containsKey)
+                .map(users::get)
+                .collect(Collectors.toList());
     }
 
     private long getNextId() {
