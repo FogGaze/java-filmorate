@@ -13,10 +13,8 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Types;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -114,9 +112,7 @@ public class UserDbStorage implements UserStorage {
     public Collection<User> getAllUsers() {
         String sql = "SELECT * FROM users";
         List<User> users = jdbcTemplate.query(sql, userRowMapper);
-        for (User user : users) {
-            loadFriends(user);
-        }
+        loadFriendsForUsers(users);
         log.trace("Передана коллекция всех пользователей");
         return users;
     }
@@ -150,9 +146,7 @@ public class UserDbStorage implements UserStorage {
         String inSql = String.join(",", Collections.nCopies(ids.size(), "?"));
         String sql = "SELECT * FROM users WHERE user_id IN (" + inSql + ")";
         List<User> users = jdbcTemplate.query(sql, userRowMapper, ids.toArray());
-        for (User user : users) {
-            loadFriends(user);
-        }
+        loadFriendsForUsers(users);
         return users;
     }
 
@@ -162,13 +156,33 @@ public class UserDbStorage implements UserStorage {
         user.setFriends(new HashSet<>(friendIds));
     }
 
+    private void loadFriendsForUsers(List<User> users) {
+        if (users == null || users.isEmpty()) {
+            return;
+        }
+        String inSql = users.stream().map(u -> "?").collect(Collectors.joining(","));
+        String sql = "SELECT user_id, friend_id FROM user_friends WHERE user_id IN (" + inSql + ")";
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, users.stream().map(User::getId).toArray());
+
+        Map<Long, Set<Long>> userIdToFriends = rows.stream()
+                .collect(Collectors.groupingBy(
+                        row -> (Long) row.get("user_id"),
+                        Collectors.mapping(row -> (Long) row.get("friend_id"), Collectors.toSet())
+                ));
+        users.forEach(user -> user.setFriends(userIdToFriends.getOrDefault(user.getId(), Set.of())));
+    }
+
     private void syncFriends(User user) {
         jdbcTemplate.update("DELETE FROM user_friends WHERE user_id=?", user.getId());
         if (user.getFriends() != null) {
             String sql = "INSERT INTO user_friends (user_id, friend_id, status) VALUES (?, ?, 'CONFIRMED')";
+            List<Object[]> batch = new ArrayList<>();
+
             for (Long friendId : user.getFriends()) {
-                jdbcTemplate.update(sql, user.getId(), friendId);
+                batch.add(new Object[]{user.getId(), friendId});
             }
+
+            batchUpdate(sql, batch);
         }
     }
 
@@ -179,5 +193,12 @@ public class UserDbStorage implements UserStorage {
             log.warn("Пользователь с таким email {} уже существует", email);
             throw new AlreadyExists("Пользователь с таким email уже существует");
         }
+    }
+
+    private int[] batchUpdate(String sql, List<Object[]> batch) {
+        if (batch == null || batch.isEmpty()) {
+            return new int[0];
+        }
+        return jdbcTemplate.batchUpdate(sql, batch);
     }
 }
