@@ -31,5 +31,5 @@ public class Film {
 
     private Set<Genre> genres = new HashSet<>();
 
-    private Rating rating;
+    private Rating mpa;
 }
